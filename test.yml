@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    vars.yml
+  tasks: 
+    - name: install nvidia drivers
+      import_tasks: nvidia.yml

@@ -1,0 +1,40 @@
+---
+- name: set command
+  set_fact: 
+    graphics_query: 'lspci -vnn | grep ''\''''[030[02]\]'' '
+- name: Check for multiple video cards
+  shell: "{{ graphics_query }}"
+  register: graphics_cards
+- name: show output
+  debug: 
+    msg: "Graphic card count: {{ graphics_cards.stdout_lines | length }} ... Configure NVidia Drivers when more than 1 card exists"
+  when: "{{ graphics_cards.stdout_lines | length }} == 2"
+- block: 
+    - name: Install fedora workstation repos
+      command: "dnf install -y fedora-workstation-repositories"
+    - name: Enable nvidia repo
+      command: "dnf config-manager rpmfusion-nonfree-nvidia-driver --set-enabled"
+    - name: Enable Copr
+      command: "dnf copr enable chenxiaolong/bumblebee -y"
+    - name: Install packages
+      dnf: 
+        name: "{{ item }}"
+        state: present
+      with_items: 
+        - akmod-nvidia
+        - acpi
+        - akmod-bbswitch
+        - bumblebee
+        - primus
+    - name: Add user to the bumblebee group
+      command: gpasswd -a {{ username }} bumblebee
+    - name: Enable bumblebee
+      systemd: 
+        name: bumblebeed
+        enabled: yes
+    - name: Mask nvidia-fallback
+      systemd: 
+        name: nvidia-fallback
+        masked: yes
+  when: "{{ graphics_cards.stdout_lines | length }} == 2"
+  become: yes

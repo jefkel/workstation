@@ -1,0 +1,13 @@
+---
+- name: Create "{{ item.name }}"" App
+  shell: "nativefier --name {{ item.name }} {{ item.url}} ~/.nativefier/{{ item.name }}/" 
+- name: create app launcher
+  template: 
+    src: templates/app_launcher.desktop.j2
+    dest: ~/.local/share/applications/{{ item.name }}.desktop
+- name: set launcher permissions
+  file: 
+    path: ~/.local/share/applications/{{ item.name }}.desktop
+    mode: 0777
+  
+  

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=ScreenRes
+Comment=Add custom resolutions
+Exec=/bin/sh /etc/rc.d/init.d/screen_res
+Categories=Application;
+Type=Application
+StartupNotify=true
+Icon=ScreenRes

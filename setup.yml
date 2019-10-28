@@ -1,0 +1,143 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    vars.yml
+  tasks: 
+    - name: add necesssary repos
+      import_tasks: repos.yml
+    - name: install base packages
+      dnf:
+        name:
+        - guake
+        - docker
+        - snapd
+        - powertop
+        - npm
+        - gnome-tweak-tool
+        - flatpak
+        - vivaldi
+        - gnome-shell-extension-dash-to-dock
+        - "@development-tools"
+        - kernel-devel 
+        - kernel-headers
+        - keepassxc
+        - dkms 
+        - elfutils-libelf-devel 
+        - qt5-qtx11extras
+        - "VirtualBox-6*"
+        - ImageMagick
+        - google-cloud-sdk
+        - protobuf
+        - kubectl
+        - simplescreenrecorder
+        - krita
+        - openshot
+        - obs-studio
+        - strongswan
+        - NetworkManager-strongswan-gnome 
+        - transmission
+        - remmina
+        - vlc
+        - docker-compose
+        - flat-remix-gnome
+        - hub
+        - simple-scan
+        - python3-devel
+        - vinagre
+        - opera
+        - slack
+        - rocketchat
+        state: present 
+        update_cache: yes
+      become: yes
+      ignore_errors: yes
+      tags:
+        - packages
+#    - name: adobe reader
+#      import_tasks: adobe.yml
+#      tags: 
+#        - adobe
+    - name: create docker group
+      group: 
+        name: docker
+        state: present
+      become: yes
+      tags:
+        - packages
+    - name: add user to docker group
+      user: 
+        name: "{{ username }}"
+        group: docker
+        state: present
+      become: yes
+      tags:
+        - packages
+    - name: create snap symlink for classic support
+      file: 
+        src: /var/lib/snapd/snap
+        dest: /snap
+        state: link
+      become: yes
+      tags:
+        - packages
+    - name: install snaps # snap module doesn't come in until 2.8
+      command: "snap install {{ item }}"
+      become: yes
+      with_items: 
+        - snap-store
+        - spotify
+        - ramboxpro
+#        - opera
+      tags:
+        - packages
+#    - name: add flathub repo
+#      command: flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+#      become: yes
+#    - name: 
+#      flatpak: 
+#        name: "{{ item }}"
+#        state: present
+#      with_items: 
+#        - chat.rocket.RocketChat
+#        - org.darktable.Darktable
+#        - com.slack.Slack
+#      tags:
+#        - packages
+    - name: install npm items
+      npm: 
+        name: "{{ item }}"
+        state: present
+        global: yes
+      #  path: ~/npm
+      with_items: 
+        - nativefier 
+      become: yes
+      tags:
+        - packages
+    - name: use nativefier to create apps
+      include_tasks: nativefier.yml
+      with_items: 
+        - { name: notion, url: "https://notion.so"}
+      tags:
+        - packages
+    - name: install vscode
+      include_tasks: vscode.yml 
+      tags:
+        - packages
+    - name: Set git email addy
+      command: git config --global user.email "{{ git_email }}"
+      tags:
+        - config
+    - name: Install tools
+      import_tasks: cli_tools.yml
+      tags:
+        - cli_tools
+#    - name: Add startup scripts
+#      import_tasks: startup_scripts.yml
+#      tags:
+#        - config
+    - name: Set nautilus to show path/address
+      command: gsettings set org.gnome.nautilus.preferences always-use-location-entry true
+    # - name: install nvidia drivers    ## Doesn't seem to work yet
+    #   import_tasks: nvidia.yml

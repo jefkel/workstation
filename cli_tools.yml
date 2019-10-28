@@ -1,0 +1,94 @@
+---
+### Note: Much of this might be simplified with the github api to determine the release download url
+# - name: Get terraform version
+#   shell: curl https://github.com/hashicorp/terraform/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+#   register: terraform_version
+# - name: Download terraform binary
+#   get_url:
+#     url: https://releases.hashicorp.com/terraform/{{ terraform_version.stdout }}/terraform_{{ terraform_version.stdout }}_linux_amd64.zip
+#     dest: /tmp/tf.zip
+#     mode: 0777
+- name: Install aws shell
+  command: pip install aws-shell
+  become: true
+- name: Download terraform binary ## Hardcoding to 0.11 for now
+  get_url:
+    url: https://github.com/hashicorp/terraform/archive/v0.11.14.zip
+    dest: /tmp/tf.zip
+    mode: 0777
+- name: unzip terraform binary
+  unarchive: 
+    src: /tmp/tf.zip
+    dest: /usr/local/bin/
+  become: yes
+- name: set perms on terraform
+  command: chmod 777 /usr/local/bin/terraform
+  become: yes
+# - name: Get vault version
+#   shell: curl https://github.com/hashicorp/vault/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+#   register: vault_version
+- name: Download vault binary
+  get_url:
+    url: https://releases.hashicorp.com/vault/1.1.2/vault_1.1.2_linux_amd64.zip
+    dest: /tmp/vault.zip
+    mode: 0777
+- name: unzip vault binary
+  unarchive: 
+    src: /tmp/vault.zip
+    dest: /usr/local/bin/
+  become: yes
+- name: set perms on vault
+  command: chmod 777 /usr/local/bin/vault
+  become: yes
+- name: Get operator_sdk version
+  shell: curl https://github.com/operator-framework/operator-sdk/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  register: operator_sdk_version
+- name: Download operator-sdk binary
+  get_url:
+    url: https://github.com/operator-framework/operator-sdk/releases/download/v{{ operator_sdk_version.stdout }}/operator-sdk-v{{ operator_sdk_version.stdout }}-x86_64-linux-gnu
+    dest: /usr/local/bin/operator-sdk
+    mode: 0777
+- name: Get helm version
+  shell: curl https://github.com/helm/helm/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  register: helm_version
+- name: Get helm download URL
+  shell: curl https://github.com/helm/helm/releases/tag/v"{{ helm_version.stdout }}" | grep "{{ helm_version.stdout }}" | grep linux-amd64.tar.gz | grep href | grep googleapis | awk -F "\"" '{print $2}'
+  register: helm_download_url
+- name: Download helm binary
+  get_url:
+    url: "{{ helm_download_url.stdout }}"
+    dest: /tmp/helm.tar.gz
+    mode: 0777
+- name: unzip helm binary
+  unarchive: 
+    src: /tmp/helm.tar.gz
+    dest: /tmp
+    extra_opts: [--strip-components=1]
+    exclude:
+      - LICENSE
+      - tiller
+      - README.md
+- name: Get oc version
+  shell: curl https://github.com/openshift/origin/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  register: oc_version
+- name: Get oc download URL
+  shell: curl https://github.com/openshift/origin/releases/tag/v"{{ oc_version.stdout }}" | grep "{{ oc_version.stdout }}" | grep linux-64bit.tar.gz | grep href | grep openshift-origin-client-tools | awk -F "\"" '{print $2}'
+  register: oc_download_url
+- name: Download oc binary
+  get_url:
+    url: "https://github.com/{{ oc_download_url.stdout }}"
+    dest: /tmp/oc.tar.gz
+    mode: 0777
+- name: unzip oc binary
+  unarchive: 
+    src: /tmp/oc.tar.gz
+    dest: /tmp
+    extra_opts: [--strip-components=1]
+  become: yes
+- name: move binaries file
+  shell: "mv /tmp/{{ item }} /usr/local/bin/{{ item }} && chmod 777 /usr/local/bin/{{ item }}"
+  become: yes
+  with_items: 
+    - oc
+  #  - kubectl
+    - helm
