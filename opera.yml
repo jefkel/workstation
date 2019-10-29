@@ -1,0 +1,13 @@
+---
+- name: import opera package key
+  shell: "rpm --import https://rpm.opera.com/rpmrepo.key"
+  become: yes
+- name: create opera repo
+  become: yes
+  shell: sh -c 'echo -e "[opera]\nname=Opera Packages\nbaseurl=https://rpm.opera.com/rpm\nenabled=1\ngpgcheck=1\ngpgkey=https://rpm.opera.com/rpmrepo.key" > /etc/yum.repos.d/opera.repo'
+- name: install opera
+  become: yes
+  dnf:
+    update_cache: yes
+    name: opera-stable
+    state: present

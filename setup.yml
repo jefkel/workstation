@@ -9,55 +9,47 @@
     - name: install base packages
       dnf:
         name:
-        - guake
-        - docker
-        - snapd
-        - powertop
-        - npm
-        - gnome-tweak-tool
-        - flatpak
-        - vivaldi
-        - gnome-shell-extension-dash-to-dock
         - "@development-tools"
+        - dkms 
+        - docker
+        - docker-compose
+        - elfutils-libelf-devel 
+        - flat-remix-gnome
+        - flatpak
+        - gnome-shell-extension-dash-to-dock
+        - gnome-tweak-tool
+        - google-cloud-sdk
+        - guake
+        - hub
+        - ImageMagick
+        - keepassxc
         - kernel-devel 
         - kernel-headers
-        - keepassxc
-        - dkms 
-        - elfutils-libelf-devel 
-        - qt5-qtx11extras
-        - "VirtualBox-6*"
-        - ImageMagick
-        - google-cloud-sdk
-        - protobuf
-        - kubectl
-        - simplescreenrecorder
         - krita
-        - openshot
-        - obs-studio
-        - strongswan
+        - kubectl
         - NetworkManager-strongswan-gnome 
-        - transmission
-        - remmina
-        - vlc
-        - docker-compose
-        - flat-remix-gnome
-        - hub
-        - simple-scan
+        - npm
+        - obs-studio
+        - openshot
+        - powertop
+        - protobuf
         - python3-devel
+        - qt5-qtx11extras
+        - remmina
+        - simple-scan
+        - simplescreenrecorder
+        - snapd
+        - strongswan
         - vinagre
-        - opera
-        - slack
-        - rocketchat
+        - "VirtualBox-6*"
+        - vivaldi
+        - vlc
         state: present 
         update_cache: yes
       become: yes
       ignore_errors: yes
       tags:
         - packages
-#    - name: adobe reader
-#      import_tasks: adobe.yml
-#      tags: 
-#        - adobe
     - name: create docker group
       group: 
         name: docker
@@ -88,22 +80,10 @@
         - snap-store
         - spotify
         - ramboxpro
-#        - opera
+        - rocket.chat
+        - slack
       tags:
         - packages
-#    - name: add flathub repo
-#      command: flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-#      become: yes
-#    - name: 
-#      flatpak: 
-#        name: "{{ item }}"
-#        state: present
-#      with_items: 
-#        - chat.rocket.RocketChat
-#        - org.darktable.Darktable
-#        - com.slack.Slack
-#      tags:
-#        - packages
     - name: install npm items
       npm: 
         name: "{{ item }}"
@@ -123,6 +103,10 @@
         - packages
     - name: install vscode
       include_tasks: vscode.yml 
+      tags:
+        - packages
+    - name: install opera
+      include_tasks: opera.yml 
       tags:
         - packages
     - name: Set git email addy
