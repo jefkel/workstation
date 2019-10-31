@@ -1,29 +1,37 @@
 ---
 ### Note: Much of this might be simplified with the github api to determine the release download url
-# - name: Get terraform version
-#   shell: curl https://github.com/hashicorp/terraform/releases/latest   | grep -Po 'tag/v\K[^"]+' 
-#   register: terraform_version
-# - name: Download terraform binary
-#   get_url:
-#     url: https://releases.hashicorp.com/terraform/{{ terraform_version.stdout }}/terraform_{{ terraform_version.stdout }}_linux_amd64.zip
-#     dest: /tmp/tf.zip
-#     mode: 0777
-- name: Install aws shell
-  command: pip install aws-shell
-  become: true
-- name: Download terraform binary ## Hardcoding to 0.11 for now
+- name: Get terraform version
+  shell: curl https://github.com/hashicorp/terraform/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  register: terraform_version
+- name: Download terraform binary
   get_url:
-    url: https://github.com/hashicorp/terraform/archive/v0.11.14.zip
+    url: "https://releases.hashicorp.com/terraform/{{ terraform_version.stdout }}/terraform_{{ terraform_version.stdout }}_linux_amd64.zip"
     dest: /tmp/tf.zip
     mode: 0777
+
+#- name: Download terraform binary ## Hardcoding to 0.11 for now
+#  get_url:
+#    url: https://github.com/hashicorp/terraform/archive/v0.11.14.zip
+#    dest: /tmp/tf.zip
+#    mode: 0777
 - name: unzip terraform binary
   unarchive: 
     src: /tmp/tf.zip
     dest: /usr/local/bin/
   become: yes
 - name: set perms on terraform
-  command: chmod 777 /usr/local/bin/terraform
+  file:
+    path: "/usr/local/bin/terraform"
+    owner: root
+    group: bin
+    mode: 0755
   become: yes
+#- name: create terraform link
+#  file:
+#    src: '/usr/local/bin/terraform-{{ terraform_version.stdout }}'
+#    dest: '/usr/local/bin/terraform'
+#    state: link
+#  become: yes
 # - name: Get vault version
 #   shell: curl https://github.com/hashicorp/vault/releases/latest   | grep -Po 'tag/v\K[^"]+' 
 #   register: vault_version
@@ -38,8 +46,17 @@
     dest: /usr/local/bin/
   become: yes
 - name: set perms on vault
-  command: chmod 777 /usr/local/bin/vault
+  file:
+    path: /usr/local/bin/vault
+    owner: root
+    group: bin
+    mode: 0755
   become: yes
+
+- name: Install aws shell
+  command: pip install aws-shell
+  become: true
+
 - name: Get operator_sdk version
   shell: curl https://github.com/operator-framework/operator-sdk/releases/latest   | grep -Po 'tag/v\K[^"]+' 
   register: operator_sdk_version
@@ -47,16 +64,18 @@
   get_url:
     url: https://github.com/operator-framework/operator-sdk/releases/download/v{{ operator_sdk_version.stdout }}/operator-sdk-v{{ operator_sdk_version.stdout }}-x86_64-linux-gnu
     dest: /usr/local/bin/operator-sdk
-    mode: 0777
+    mode: 0755
+  become: yes
+
 - name: Get helm version
   shell: curl https://github.com/helm/helm/releases/latest   | grep -Po 'tag/v\K[^"]+' 
   register: helm_version
-- name: Get helm download URL
-  shell: curl https://github.com/helm/helm/releases/tag/v"{{ helm_version.stdout }}" | grep "{{ helm_version.stdout }}" | grep linux-amd64.tar.gz | grep href | grep googleapis | awk -F "\"" '{print $2}'
-  register: helm_download_url
+#- name: Get helm download URL
+#  shell: curl https://github.com/helm/helm/releases/tag/v"{{ helm_version.stdout }}" | grep "{{ helm_version.stdout }}" | grep linux-amd64.tar.gz | grep href | grep googleapis | awk -F "\"" '{print $2}'
+#  register: helm_download_url
 - name: Download helm binary
   get_url:
-    url: "{{ helm_download_url.stdout }}"
+    url: "https://get.helm.sh/helm-v{{ helm_version.stdout }}-linux-amd64.tar.gz"
     dest: /tmp/helm.tar.gz
     mode: 0777
 - name: unzip helm binary
@@ -90,5 +109,4 @@
   become: yes
   with_items: 
     - oc
-  #  - kubectl
     - helm

@@ -80,8 +80,8 @@
         - snap-store
         - spotify
         - ramboxpro
-        - rocket.chat
-        - slack
+        - rocketchat-desktop
+        - "slack --classic"
       tags:
         - packages
     - name: install npm items
