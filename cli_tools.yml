@@ -2,6 +2,7 @@
 ### Note: Much of this might be simplified with the github api to determine the release download url
 - name: Get terraform version
   shell: curl https://github.com/hashicorp/terraform/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  changed_when: false
   register: terraform_version
 - name: Download terraform binary
   get_url:
@@ -59,6 +60,7 @@
 
 - name: Get operator_sdk version
   shell: curl https://github.com/operator-framework/operator-sdk/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  changed_when: false
   register: operator_sdk_version
 - name: Download operator-sdk binary
   get_url:
@@ -69,6 +71,7 @@
 
 - name: Get helm version
   shell: curl https://github.com/helm/helm/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  changed_when: false
   register: helm_version
 #- name: Get helm download URL
 #  shell: curl https://github.com/helm/helm/releases/tag/v"{{ helm_version.stdout }}" | grep "{{ helm_version.stdout }}" | grep linux-amd64.tar.gz | grep href | grep googleapis | awk -F "\"" '{print $2}'
@@ -88,10 +91,12 @@
       - tiller
       - README.md
 - name: Get oc version
-  shell: curl https://github.com/openshift/origin/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  shell: curl https://github.com/openshift/origin/releases/latest   | grep -Po 'tag/v\K[^"]+'
+  changed_when: false
   register: oc_version
 - name: Get oc download URL
   shell: curl https://github.com/openshift/origin/releases/tag/v"{{ oc_version.stdout }}" | grep "{{ oc_version.stdout }}" | grep linux-64bit.tar.gz | grep href | grep openshift-origin-client-tools | awk -F "\"" '{print $2}'
+  changed_when: false
   register: oc_download_url
 - name: Download oc binary
   get_url:
@@ -105,7 +110,13 @@
     extra_opts: [--strip-components=1]
   become: yes
 - name: move binaries file
-  shell: "mv /tmp/{{ item }} /usr/local/bin/{{ item }} && chmod 777 /usr/local/bin/{{ item }}"
+  copy:
+    remote_src: yes
+    src: "/tmp/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    owner: root
+    group: bin
+    mode: 0755
   become: yes
   with_items: 
     - oc

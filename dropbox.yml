@@ -1,0 +1,52 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    vars.yml
+  tasks: 
+  - name: get dropbox package
+    get_url:
+      url: https://www.dropbox.com/download?plat=lnx.x86_64
+      dest: /tmp/dropbox-linux-x86_64.tar.gz
+      mode: 0777
+
+  - name: unzip binary packages
+    unarchive:
+      src: /tmp/dropbox-linux-x86_64.tar.gz
+      dest: /usr/local/bin
+      extra_opts: [--strip-components=1]
+      exclude: 
+        - VERSION
+      remote_src: yes
+      owner: root
+      group: bin
+      mode: 0755
+    become: yes
+
+  - name: set user to allow systemd services
+    shell: "loginctl enable-linger {{ username }}"
+    become: yes
+
+  - name: ensure user systemd dir exists
+    file:
+      path: "/home/{{ username }}/.config/systemd/user/"
+      state: directory
+      recurse: yes
+
+  - name: Copy service file
+    copy:
+      src: dropbox.service
+      dest: "/home/{{ username }}/.config/systemd/user/dropbox.service"
+      mode: 0755
+  
+  - name: Configure systemd
+    systemd:
+      daemon_reexec: yes
+      daemon_reload: yes
+      name: dropbox.service
+      scope: user
+      enabled: yes
+
+  - name: Remind
+    debug:
+      msg: "The Dropbox user service will not be able to successfully launch until dropbox is manually started and logged in."
