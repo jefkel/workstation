@@ -44,11 +44,8 @@
 - name: unzip vault binary
   unarchive: 
     src: /tmp/vault.zip
+    remote_src: yes
     dest: /usr/local/bin/
-  become: yes
-- name: set perms on vault
-  file:
-    path: /usr/local/bin/vault
     owner: root
     group: bin
     mode: 0755

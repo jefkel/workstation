@@ -22,6 +22,7 @@
         - guake
         - hub
         - ImageMagick
+        - jq
         - keepassxc
         - kernel-devel 
         - kernel-headers
