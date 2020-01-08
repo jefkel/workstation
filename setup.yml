@@ -70,6 +70,7 @@
       become: yes
       tags:
         - packages
+
     - name: create snap symlink for classic support
       file: 
         src: /var/lib/snapd/snap
@@ -84,6 +85,7 @@
       with_items: 
         - snap-store
         - spotify
+        - postman
         - ramboxpro
         - rocketchat-desktop
         - "slack --classic"
