@@ -106,6 +106,16 @@
     dest: /tmp
     extra_opts: [--strip-components=1]
   become: yes
+- name: Download svcat binary
+  get_url:
+    url: "https://download.svcat.sh/cli/latest/linux/amd64/svcat"
+    dest: /tmp/svcat
+    mode: 0755
+- name: Download Minio Client binary
+  get_url:
+    url: "https://dl.min.io/client/mc/release/linux-amd64/mc"
+    dest: /tmp/mc
+    mode: 0755
 - name: move binaries file
   copy:
     remote_src: yes
@@ -118,3 +128,5 @@
   with_items: 
     - oc
     - helm
+    - svcat
+    - mc

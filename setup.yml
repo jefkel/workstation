@@ -6,7 +6,7 @@
   tasks: 
     - name: set hostname
       hostname:
-        name: jklap
+        name: "{{ hostname }}"
     - name: add necesssary repos
       import_tasks: repos.yml
     - name: install base packages
