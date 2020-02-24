@@ -9,6 +9,13 @@
         name: "{{ hostname }}"
     - name: add necesssary repos
       import_tasks: repos.yml
+    - name: replace dnf.conf
+      file:
+        src: dnf.conf
+        dest: /etc/dnf/dnf.conf
+        owner: root
+        group: root
+        mode: 0644
     - name: install base packages
       dnf:
         name:
@@ -26,11 +33,11 @@
         - hub
         - ImageMagick
         - jq
-        - keepassxc
         - kernel-devel 
         - kernel-headers
         - krita
         - kubectl
+        - libselinux-python
         - NetworkManager-strongswan-gnome 
         - npm
         - obs-studio
@@ -39,6 +46,7 @@
         - powertop
         - protobuf
         - python3-devel
+        - python3-ansible-runner
         - qt5-qtx11extras
         - remmina
         - simple-scan
