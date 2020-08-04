@@ -16,15 +16,23 @@
         owner: root
         group: root
         mode: 0644
+    - name: install virtualbox packages
+      dnf:
+        name:
+        - "VirtualBox-6*"
+      become: yes
+      ignore_errors: yes
+      tags:
+        - packages
     - name: install base packages
       dnf:
         name:
+        - buildah 
         - "@development-tools"
         - dkms 
         - docker
         - docker-compose
         - elfutils-libelf-devel 
-        - flat-remix-gnome
         - flatpak
         - gnome-shell-extension-dash-to-dock
         - gnome-tweak-tool
@@ -51,10 +59,10 @@
         - remmina
         - simple-scan
         - simplescreenrecorder
+        - skopeo
         - snapd
         - strongswan
         - vinagre
-        - "VirtualBox-6*"
         - vivaldi
         - vlc
         state: present 
@@ -79,6 +87,14 @@
       tags:
         - packages
 
+    - name: add flatpak repo
+      command: "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo"
+
+    - name: install flatpak apps
+      command: "flatpak install {{ item.repo }} {{ item.name }}"
+      with_items:
+        - { name: "com.slack.Slack", repo: "flathub"}
+
     - name: create snap symlink for classic support
       file: 
         src: /var/lib/snapd/snap
@@ -96,7 +112,9 @@
         - postman
         - ramboxpro
         - rocketchat-desktop
-        - "slack --classic"
+        - bitwarden
+        - zoom-client
+        - "helm --classic"
       tags:
         - packages
     - name: install npm items

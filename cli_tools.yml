@@ -70,27 +70,6 @@
     mode: 0755
   become: yes
 
-- name: Get helm version
-  shell: curl https://github.com/helm/helm/releases/latest   | grep -Po 'tag/v\K[^"]+' 
-  changed_when: false
-  register: helm_version
-#- name: Get helm download URL
-#  shell: curl https://github.com/helm/helm/releases/tag/v"{{ helm_version.stdout }}" | grep "{{ helm_version.stdout }}" | grep linux-amd64.tar.gz | grep href | grep googleapis | awk -F "\"" '{print $2}'
-#  register: helm_download_url
-- name: Download helm binary
-  get_url:
-    url: "https://get.helm.sh/helm-v{{ helm_version.stdout }}-linux-amd64.tar.gz"
-    dest: /tmp/helm.tar.gz
-    mode: 0777
-- name: unzip helm binary
-  unarchive: 
-    src: /tmp/helm.tar.gz
-    dest: /tmp
-    extra_opts: [--strip-components=1]
-    exclude:
-      - LICENSE
-      - tiller
-      - README.md
 - name: Get oc version
   shell: curl https://github.com/openshift/origin/releases/latest   | grep -Po 'tag/v\K[^"]+'
   changed_when: false
@@ -101,7 +80,8 @@
   register: oc_download_url
 - name: Download oc binary
   get_url:
-    url: "https://github.com/{{ oc_download_url.stdout }}"
+#    url: "https://github.com/{{ oc_download_url.stdout }}"
+    url: "https://downloads-openshift-console.apps.klab.devops.gov.bc.ca/amd64/linux/oc.tar"
     dest: /tmp/oc.tar.gz
     mode: 0777
 - name: unzip oc binary
@@ -135,7 +115,6 @@
   become: yes
   with_items: 
     - oc
-    - helm
     - svcat
     - mc
     - jfrog
