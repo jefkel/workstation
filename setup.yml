@@ -45,8 +45,9 @@
         - kernel-headers
         - krita
         - kubectl
-        - libselinux-python
         - NetworkManager-strongswan-gnome 
+        - libselinux-python
+        - libnsl
         - npm
         - obs-studio
         - openshot

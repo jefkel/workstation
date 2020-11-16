@@ -104,6 +104,9 @@
 - name: Get JFrog cli
   shell: (cd /tmp; curl -fL https://getcli.jfrog.io | sh)
 
+- name: Get kustomize cli
+  shell: (cd /tmp; curl https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash)
+
 - name: move binaries file
   copy:
     remote_src: yes
@@ -118,3 +121,4 @@
     - svcat
     - mc
     - jfrog
+    - kustomize
