@@ -16,22 +16,23 @@
         owner: root
         group: root
         mode: 0644
-    - name: install virtualbox packages
-      dnf:
-        name:
-        - "VirtualBox-6*"
-      become: yes
-      ignore_errors: yes
-      tags:
-        - packages
+#    - name: install virtualbox packages
+#      dnf:
+#        name:
+#        - "VirtualBox-6*"
+#      become: yes
+#      ignore_errors: yes
+#      tags:
+#        - packages
     - name: install base packages
       dnf:
         name:
         - buildah 
+        - code
         - "@development-tools"
         - dkms 
-        - docker
-        - docker-compose
+#        - docker
+#        - docker-compose
         - elfutils-libelf-devel 
         - flatpak
         - gnome-shell-extension-dash-to-dock
@@ -46,10 +47,10 @@
         - krita
         - kubectl
         - NetworkManager-strongswan-gnome 
-        - libselinux-python
+        - python3-libselinux
         - libnsl
+        - mpv
         - npm
-        - obs-studio
         - openshot
         - podman
         - powertop
@@ -63,6 +64,7 @@
         - skopeo
         - snapd
         - strongswan
+        - teams
         - vinagre
         - vivaldi
         - vlc
@@ -72,29 +74,33 @@
       ignore_errors: yes
       tags:
         - packages
-    - name: create docker group
-      group: 
-        name: docker
-        state: present
-      become: yes
-      tags:
-        - packages
-    - name: add user to docker group
-      user: 
-        name: "{{ username }}"
-        group: docker
-        state: present
-      become: yes
-      tags:
-        - packages
+#    - name: create docker group
+#      group: 
+#        name: docker
+#        state: present
+#      become: yes
+#      tags:
+#        - packages
+#    - name: add user to docker group
+#      user: 
+#        name: "{{ username }}"
+#        group: docker
+#        state: present
+#      become: yes
+#      tags:
+#        - packages
 
     - name: add flatpak repo
       command: "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo"
 
     - name: install flatpak apps
-      command: "flatpak install {{ item.repo }} {{ item.name }}"
+      command: "flatpak install {{ item.repo }} {{ item.name }} --noninteractive"
       with_items:
         - { name: "com.slack.Slack", repo: "flathub"}
+        - { name: "com.obsproject.Studio", repo: "flathub"}
+        - { name: "us.zoom.Zoom", repo: "flathub"}
+
+#    - name: add flatpak app aliases
 
     - name: create snap symlink for classic support
       file: 
@@ -113,8 +119,7 @@
         - postman
         - ramboxpro
         - rocketchat-desktop
-        - bitwarden
-        - zoom-client
+#        - bitwarden
         - "helm --classic"
       tags:
         - packages
@@ -133,10 +138,6 @@
       include_tasks: nativefier.yml
       with_items: 
         - { name: notion, url: "https://notion.so"}
-      tags:
-        - packages
-    - name: install vscode
-      include_tasks: vscode.yml 
       tags:
         - packages
     - name: install opera

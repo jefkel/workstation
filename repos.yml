@@ -4,7 +4,7 @@
   become: yes
   with_items: 
     - https://repo.vivaldi.com/archive/vivaldi-fedora.repo
-    - http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo
+#    - http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo
 - name: add repos via file
   copy: 
     src: "files/{{ item }}"
@@ -14,18 +14,17 @@
   with_items: 
     - google-cloud-sdk.repo
     - kubernetes.repo
+    - microsoft.repo
+  
 - name: add rpmfusion free
-  shell: "rpm -Uvh https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-30.noarch.rpm"
+  shell: "rpm -Uvh https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-33.noarch.rpm"
   become: yes
   ignore_errors: true
 - name: add rpmfusion nonfree
-  shell: "rpm -Uvh https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-30.noarch.rpm"
+  shell: "rpm -Uvh https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-33.noarch.rpm"
   become: yes
   ignore_errors: true
 - name: add flat-remix-theme repo
   shell: dnf copr enable daniruiz/flat-remix -y 
   become: yes
   ignore_errors: yes
-
- 
-  

@@ -1,51 +1,146 @@
 ---
 ### Note: Much of this might be simplified with the github api to determine the release download url
+#########################################################
+# Terraform
 - name: Get terraform version
   shell: curl https://github.com/hashicorp/terraform/releases/latest   | grep -Po 'tag/v\K[^"]+' 
   changed_when: false
   register: terraform_version
+
 - name: Download terraform binary
   get_url:
     url: "https://releases.hashicorp.com/terraform/{{ terraform_version.stdout }}/terraform_{{ terraform_version.stdout }}_linux_amd64.zip"
-    dest: /tmp/tf.zip
-    mode: 0777
-
-#- name: Download terraform binary ## Hardcoding to 0.11 for now
-#  get_url:
 #    url: https://github.com/hashicorp/terraform/archive/v0.11.14.zip
-#    dest: /tmp/tf.zip
-#    mode: 0777
+    dest: "/tmp/tf_{{ terraform_version.stdout }}.zip"
+    mode: 0755
+
 - name: unzip terraform binary
   unarchive: 
-    src: /tmp/tf.zip
+    src: "/tmp/tf_{{ terraform_version.stdout }}.zip"
+    remote_src: yes
     dest: /usr/local/bin/
-  become: yes
-- name: set perms on terraform
-  file:
-    path: "/usr/local/bin/terraform"
     owner: root
     group: bin
     mode: 0755
   become: yes
-#- name: create terraform link
-#  file:
-#    src: '/usr/local/bin/terraform-{{ terraform_version.stdout }}'
-#    dest: '/usr/local/bin/terraform'
-#    state: link
-#  become: yes
-# - name: Get vault version
-#   shell: curl https://github.com/hashicorp/vault/releases/latest   | grep -Po 'tag/v\K[^"]+' 
-#   register: vault_version
+
+#########################################################
+# Vault
+- name: Get Hashicorp Vault version
+  shell: curl https://github.com/hashicorp/vault/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  changed_when: false
+  register: vault_version
 - name: Download vault binary
   get_url:
-    url: https://releases.hashicorp.com/vault/1.2.3/vault_1.2.3_linux_amd64.zip
-    dest: /tmp/vault.zip
-    mode: 0777
+    url: "https://releases.hashicorp.com/vault/{{ vault_version.stdout }}/vault_{{ vault_version.stdout }}_linux_amd64.zip"
+    dest: "/tmp/vault_{{ vault_version.stdout }}.zip"
+    mode: 0755
+
 - name: unzip vault binary
   unarchive: 
-    src: /tmp/vault.zip
+    src: "/tmp/vault_{{ vault_version.stdout }}.zip"
     remote_src: yes
     dest: /usr/local/bin/
+    owner: root
+    group: bin
+    mode: 0755
+  become: yes
+
+#########################################################
+# OperatorSDK
+- name: Get operator_sdk version
+  shell: curl https://github.com/operator-framework/operator-sdk/releases/latest   | grep -Po 'tag/v\K[^"]+' 
+  changed_when: false
+  register: operator_sdk_version
+
+- name: Download operator-sdk binary
+  get_url:
+    url: https://github.com/operator-framework/operator-sdk/releases/download/v{{ operator_sdk_version.stdout }}/operator-sdk-v{{ operator_sdk_version.stdout }}-x86_64-linux-gnu
+    dest: /usr/local/bin/operator-sdk
+    owner: root
+    group: bin
+    mode: 0755
+  become: yes
+
+#########################################################
+# OpenShift CLI (oc)
+- name: Get oc cli version
+  shell: curl https://github.com/openshift/okd/releases/latest   | grep -Po 'tag/\K[^"]+'
+  changed_when: false
+  register: oc_version
+- name: Get oc download URL
+  shell: curl https://github.com/openshift/okd/releases/tag/"{{ oc_version.stdout }}" | grep "{{ oc_version.stdout }}" | grep linux | grep href | grep openshift-client | awk -F "\"" '{print $2}'
+  changed_when: false
+  register: oc_download_url
+
+- name: Download oc binary
+  get_url:
+    url: "https://github.com/{{ oc_download_url.stdout }}"
+#    url: "https://downloads-openshift-console.apps.klab.devops.gov.bc.ca/amd64/linux/oc.tar"
+    dest: /tmp/oc.tar.gz
+    mode: 0755
+
+- name: unzip oc binary
+  unarchive: 
+    src: /tmp/oc.tar.gz
+    dest: /usr/local/bin/
+    owner: root
+    group: bin
+    mode: 0755
+    exclude:
+    - README.md
+    - kubectl
+  become: yes
+
+#########################################################
+# Minio CLI (mc)
+- name: Download Minio Client binary
+  get_url:
+    url: "https://dl.min.io/client/mc/release/linux-amd64/mc"
+    dest: /usr/local/bin/
+    owner: root
+    group: bin
+    mode: 0755
+  become: yes
+
+#########################################################
+# Kustomize
+- name: Get kustomize version
+  shell: curl https://github.com/kubernetes-sigs/kustomize/releases/latest  | grep -Po 'tag/\K[^"]+'
+  changed_when: false
+  register: kustomize_version
+
+- name: Get kustomize download URL
+  shell: curl https://github.com/kubernetes-sigs/kustomize/releases/tag/"{{ kustomize_version.stdout }}" | grep href | grep linux | grep amd64 | grep kustomize | awk -F "\"" '{print $2}'
+  changed_when: false
+  register: kustomize_download_url
+
+- name: Download kustomize binary
+  get_url:
+    url: "https://github.com{{ kustomize_download_url.stdout }}"
+    dest: "/tmp/kustomize.zip"
+    mode: 0755
+
+- name: unzip kustomize binary
+  unarchive: 
+    src: "/tmp/kustomize.zip"
+    remote_src: yes
+    dest: /usr/local/bin/
+    owner: root
+    group: bin
+    mode: 0755
+  become: yes
+
+#########################################################
+# jfrog cli
+- name: Get JFrog cli
+  shell: (cd /tmp; curl -fL https://getcli.jfrog.io | sh)
+
+- name: move jfrog file
+  copy:
+    remote_src: yes
+    src: "/tmp/jfrog"
+    dest: "/usr/local/bin/jfrog"
     owner: root
     group: bin
     mode: 0755
@@ -59,66 +154,3 @@
   command: pip3 install boto3
   become: true
 
-- name: Get operator_sdk version
-  shell: curl https://github.com/operator-framework/operator-sdk/releases/latest   | grep -Po 'tag/v\K[^"]+' 
-  changed_when: false
-  register: operator_sdk_version
-- name: Download operator-sdk binary
-  get_url:
-    url: https://github.com/operator-framework/operator-sdk/releases/download/v{{ operator_sdk_version.stdout }}/operator-sdk-v{{ operator_sdk_version.stdout }}-x86_64-linux-gnu
-    dest: /usr/local/bin/operator-sdk
-    mode: 0755
-  become: yes
-
-- name: Get oc version
-  shell: curl https://github.com/openshift/origin/releases/latest   | grep -Po 'tag/v\K[^"]+'
-  changed_when: false
-  register: oc_version
-- name: Get oc download URL
-  shell: curl https://github.com/openshift/origin/releases/tag/v"{{ oc_version.stdout }}" | grep "{{ oc_version.stdout }}" | grep linux-64bit.tar.gz | grep href | grep openshift-origin-client-tools | awk -F "\"" '{print $2}'
-  changed_when: false
-  register: oc_download_url
-- name: Download oc binary
-  get_url:
-#    url: "https://github.com/{{ oc_download_url.stdout }}"
-    url: "https://downloads-openshift-console.apps.klab.devops.gov.bc.ca/amd64/linux/oc.tar"
-    dest: /tmp/oc.tar.gz
-    mode: 0777
-- name: unzip oc binary
-  unarchive: 
-    src: /tmp/oc.tar.gz
-    dest: /tmp
-    extra_opts: [--strip-components=1]
-  become: yes
-- name: Download svcat binary
-  get_url:
-    url: "https://download.svcat.sh/cli/latest/linux/amd64/svcat"
-    dest: /tmp/svcat
-    mode: 0755
-- name: Download Minio Client binary
-  get_url:
-    url: "https://dl.min.io/client/mc/release/linux-amd64/mc"
-    dest: /tmp/mc
-    mode: 0755
-
-- name: Get JFrog cli
-  shell: (cd /tmp; curl -fL https://getcli.jfrog.io | sh)
-
-- name: Get kustomize cli
-  shell: (cd /tmp; curl https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash)
-
-- name: move binaries file
-  copy:
-    remote_src: yes
-    src: "/tmp/{{ item }}"
-    dest: "/usr/local/bin/{{ item }}"
-    owner: root
-    group: bin
-    mode: 0755
-  become: yes
-  with_items: 
-    - oc
-    - svcat
-    - mc
-    - jfrog
-    - kustomize
