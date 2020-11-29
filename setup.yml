@@ -16,14 +16,6 @@
         owner: root
         group: root
         mode: 0644
-#    - name: install virtualbox packages
-#      dnf:
-#        name:
-#        - "VirtualBox-6*"
-#      become: yes
-#      ignore_errors: yes
-#      tags:
-#        - packages
     - name: install base packages
       dnf:
         name:
@@ -58,6 +50,7 @@
         - python3-devel
         - python3-ansible-runner
         - qt5-qtx11extras
+        - rclone
         - remmina
         - simple-scan
         - simplescreenrecorder
