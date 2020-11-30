@@ -1,6 +1,19 @@
 ---
+- name: import repo GPG keys
+# Added rpmkeys re: https://access.redhat.com/solutions/3720351
+  shell: "rpm --import {{ item }} && rpmkeys --import {{ item }}"
+  args:
+    warn: false
+  become: yes
+  with_items:
+    - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+    - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    - https://packages.microsoft.com/keys/microsoft.asc
+    - https://rpm.opera.com/rpmrepo.key
+    - https://repo.vivaldi.com/archive/linux_signing_key.pub
+
 - name: add repos via url
-  shell: "dnf config-manager --add-repo {{ item }}"
+  command: "dnf config-manager --add-repo {{ item }}"
   args:
     warn: false
   become: yes
@@ -20,7 +33,7 @@
     - opera.repo
   
 - name: add repos via remoteRPM
-  shell: "dnf install {{ item }}"
+  command: "dnf install {{ item }}"
   args:
     warn: false
   become: yes
@@ -29,6 +42,8 @@
   - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-33.noarch.rpm
 
 - name: add flat-remix-theme repo
-  shell: dnf copr enable daniruiz/flat-remix -y 
+  command: dnf copr enable daniruiz/flat-remix -y 
+  args:
+    warn: false
   become: yes
   ignore_errors: yes

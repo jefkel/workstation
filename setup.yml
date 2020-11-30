@@ -87,9 +87,11 @@
 
     - name: add flatpak repo
       command: "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo"
+      become: yes
 
     - name: install flatpak apps
       command: "flatpak install {{ item.repo }} {{ item.name }} --noninteractive"
+      become: yes
       with_items:
         - { name: "com.slack.Slack", repo: "flathub"}
         - { name: "com.obsproject.Studio", repo: "flathub"}
@@ -103,6 +105,7 @@
       become: yes
       tags:
         - packages
+
     - name: install snaps # snap module doesn't come in until 2.8
       command: "snap install {{ item }}"
       become: yes
