@@ -33,7 +33,8 @@
     - opera.repo
   
 - name: add repos via remoteRPM
-  command: "dnf install {{ item }}"
+# Added -y to avoid additional troubleshooting of rpmkeys --import issues
+  command: "dnf install {{ item }} -y"
   args:
     warn: false
   become: yes

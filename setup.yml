@@ -106,17 +106,35 @@
       tags:
         - packages
 
+    - name: snap install expected to fail
+      command: "snap install {{ item }}"
+      become: yes
+      with_items:
+        - snap-store
+      ignore_errors: yes
+      tags:
+        - packages
+
     - name: install snaps # snap module doesn't come in until 2.8
       command: "snap install {{ item }}"
       become: yes
       with_items: 
-        - snap-store
+#        - snap-store
         - spotify
         - postman
         - ramboxpro
         - rocketchat-desktop
 #        - bitwarden
         - "helm --classic"
+      tags:
+        - packages
+
+    - name: snap remove store
+      command: "snap remove {{ item }}"
+      become: yes
+      with_items:
+        - snap-store
+      ignore_errors: yes
       tags:
         - packages
 
