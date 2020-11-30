@@ -7,6 +7,7 @@
     - name: set hostname
       hostname:
         name: "{{ hostname }}"
+
     - name: add necesssary repos
       import_tasks: repos.yml
     - name: replace dnf.conf
@@ -44,6 +45,7 @@
         - mpv
         - npm
         - openshot
+        - opera-stable
         - podman
         - powertop
         - protobuf
@@ -93,8 +95,6 @@
         - { name: "com.obsproject.Studio", repo: "flathub"}
         - { name: "us.zoom.Zoom", repo: "flathub"}
 
-#    - name: add flatpak app aliases
-
     - name: create snap symlink for classic support
       file: 
         src: /var/lib/snapd/snap
@@ -116,6 +116,7 @@
         - "helm --classic"
       tags:
         - packages
+
     - name: install npm items
       npm: 
         name: "{{ item }}"
@@ -127,20 +128,19 @@
       become: yes
       tags:
         - packages
+
     - name: use nativefier to create apps
       include_tasks: nativefier.yml
       with_items: 
         - { name: notion, url: "https://notion.so"}
       tags:
         - packages
-    - name: install opera
-      include_tasks: opera.yml 
-      tags:
-        - packages
+
     - name: Set git email addy
       command: git config --global user.email "{{ git_email }}"
       tags:
         - config
+
     - name: Install tools
       import_tasks: cli_tools.yml
       tags:
@@ -151,5 +151,3 @@
 #        - config
     - name: Set nautilus to show path/address
       command: gsettings set org.gnome.nautilus.preferences always-use-location-entry true
-    # - name: install nvidia drivers    ## Doesn't seem to work yet
-    #   import_tasks: nvidia.yml

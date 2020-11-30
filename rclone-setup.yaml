@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    vars.yml
+  tasks: 
+## sync script would work better as a template with substitutions in for:
+## RCLONE_REMOTE - name of remote
+## RCLONE_TARGET - (local dropbox path)
+## RCLONE_BACKUP - (local backup path for local sync conflicts)
+    - name: Add rclone-sync script
+      copy: 
+        src: "files/rclone-sync.sh"
+        dest: "/home/{{ username }}/.local/bin/rclone-sync.sh"
+        mode: 0755
+      become: false
+
+## Testing needed for rclone configuration (ie: is it a manual pre-req, or can we configure here)
+
+## Cron should wait for rclone config? (just so we don't have a cron in place without a workable sync)
+    - name: RClone Cron config
+      cron:
+        name: "rclone sync"
+        state: present
+        minute: "5,35"
+        job: "/home/{{ username }}/.local/bin/rclone-sync.sh > /dev/null 2>&1"

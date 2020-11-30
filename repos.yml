@@ -1,10 +1,12 @@
 ---
 - name: add repos via url
-  command: "dnf config-manager --add-repo {{ item }}"
+  shell: "dnf config-manager --add-repo {{ item }}"
+  args:
+    warn: false
   become: yes
   with_items: 
     - https://repo.vivaldi.com/archive/vivaldi-fedora.repo
-#    - http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo
+
 - name: add repos via file
   copy: 
     src: "files/{{ item }}"
@@ -15,15 +17,17 @@
     - google-cloud-sdk.repo
     - kubernetes.repo
     - microsoft.repo
+    - opera.repo
   
-- name: add rpmfusion free
-  shell: "rpm -Uvh https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-33.noarch.rpm"
+- name: add repos via remoteRPM
+  shell: "dnf install {{ item }}"
+  args:
+    warn: false
   become: yes
-  ignore_errors: true
-- name: add rpmfusion nonfree
-  shell: "rpm -Uvh https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-33.noarch.rpm"
-  become: yes
-  ignore_errors: true
+  with_items:
+  - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-33.noarch.rpm
+  - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-33.noarch.rpm
+
 - name: add flat-remix-theme repo
   shell: dnf copr enable daniruiz/flat-remix -y 
   become: yes
