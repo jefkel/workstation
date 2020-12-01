@@ -35,6 +35,7 @@
         - hub
         - ImageMagick
         - jq
+        - keepassxc
         - kernel-devel 
         - kernel-headers
         - krita
