@@ -96,6 +96,9 @@
         - { name: "com.slack.Slack", repo: "flathub"}
         - { name: "com.obsproject.Studio", repo: "flathub"}
         - { name: "us.zoom.Zoom", repo: "flathub"}
+        - { name: "com.spotify.Client", repo: "flathub"}
+        - { name: "com.getpostman.Postman", repo: "flathub"}
+#        - { name: "chat.rocket.RocketChat", repo: "flathub"}
 
     - name: create snap symlink for classic support
       file: 
@@ -119,12 +122,7 @@
       command: "snap install {{ item }}"
       become: yes
       with_items: 
-#        - snap-store
-        - spotify
-        - postman
-        - ramboxpro
-        - rocketchat-desktop
-#        - bitwarden
+#        - ramboxpro
         - "helm --classic"
       tags:
         - packages
