@@ -2,4 +2,4 @@ hostname: jklap
 git_email: jeff.kelly@arctiq.ca
 git_username: jefkel
 username: jkelly
-bitdefender: {{ vault_bitdefender }}
+bitdefender: "{{ vault_bitdefender }}"

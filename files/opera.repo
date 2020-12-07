@@ -1,0 +1,7 @@
+[opera]
+name=Opera Packages
+type=rpm-md
+baseurl=https://rpm.opera.com/rpm
+enabled=1
+gpgcheck=1
+gpgkey=https://rpm.opera.com/rpmrepo.key

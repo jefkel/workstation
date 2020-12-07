@@ -7,6 +7,7 @@
     - name: set hostname
       hostname:
         name: "{{ hostname }}"
+
     - name: add necesssary repos
       import_tasks: repos.yml
     - name: replace dnf.conf
@@ -16,22 +17,15 @@
         owner: root
         group: root
         mode: 0644
-    - name: install virtualbox packages
-      dnf:
-        name:
-        - "VirtualBox-6*"
-      become: yes
-      ignore_errors: yes
-      tags:
-        - packages
     - name: install base packages
       dnf:
         name:
         - buildah 
+        - code
         - "@development-tools"
         - dkms 
-        - docker
-        - docker-compose
+#        - docker
+#        - docker-compose
         - elfutils-libelf-devel 
         - flatpak
         - gnome-shell-extension-dash-to-dock
@@ -41,28 +35,32 @@
         - hub
         - ImageMagick
         - jq
+        - keepassxc
         - kernel-devel 
         - kernel-headers
         - krita
         - kubectl
         - NetworkManager-strongswan-gnome 
-        - libselinux-python
+        - python3-libselinux
         - libnsl
+        - mpv
         - npm
-        - obs-studio
         - openshot
+        - opera-stable
         - podman
         - powertop
         - protobuf
         - python3-devel
         - python3-ansible-runner
         - qt5-qtx11extras
+        - rclone
         - remmina
         - simple-scan
         - simplescreenrecorder
         - skopeo
         - snapd
         - strongswan
+        - teams
         - vinagre
         - vivaldi
         - vlc
@@ -72,29 +70,36 @@
       ignore_errors: yes
       tags:
         - packages
-    - name: create docker group
-      group: 
-        name: docker
-        state: present
-      become: yes
-      tags:
-        - packages
-    - name: add user to docker group
-      user: 
-        name: "{{ username }}"
-        group: docker
-        state: present
-      become: yes
-      tags:
-        - packages
+#    - name: create docker group
+#      group: 
+#        name: docker
+#        state: present
+#      become: yes
+#      tags:
+#        - packages
+#    - name: add user to docker group
+#      user: 
+#        name: "{{ username }}"
+#        group: docker
+#        state: present
+#      become: yes
+#      tags:
+#        - packages
 
     - name: add flatpak repo
       command: "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo"
+      become: yes
 
     - name: install flatpak apps
-      command: "flatpak install {{ item.repo }} {{ item.name }}"
+      command: "flatpak install {{ item.repo }} {{ item.name }} --noninteractive"
+      become: yes
       with_items:
         - { name: "com.slack.Slack", repo: "flathub"}
+        - { name: "com.obsproject.Studio", repo: "flathub"}
+        - { name: "us.zoom.Zoom", repo: "flathub"}
+        - { name: "com.spotify.Client", repo: "flathub"}
+        - { name: "com.getpostman.Postman", repo: "flathub"}
+#        - { name: "chat.rocket.RocketChat", repo: "flathub"}
 
     - name: create snap symlink for classic support
       file: 
@@ -104,20 +109,34 @@
       become: yes
       tags:
         - packages
+
+    - name: snap install expected to fail
+      command: "snap install {{ item }}"
+      become: yes
+      with_items:
+        - snap-store
+      ignore_errors: yes
+      tags:
+        - packages
+
     - name: install snaps # snap module doesn't come in until 2.8
       command: "snap install {{ item }}"
       become: yes
       with_items: 
-        - snap-store
-        - spotify
-        - postman
-        - ramboxpro
-        - rocketchat-desktop
-        - bitwarden
-        - zoom-client
+#        - ramboxpro
         - "helm --classic"
       tags:
         - packages
+
+    - name: snap remove store
+      command: "snap remove {{ item }}"
+      become: yes
+      with_items:
+        - snap-store
+      ignore_errors: yes
+      tags:
+        - packages
+
     - name: install npm items
       npm: 
         name: "{{ item }}"
@@ -129,24 +148,19 @@
       become: yes
       tags:
         - packages
+
     - name: use nativefier to create apps
       include_tasks: nativefier.yml
       with_items: 
         - { name: notion, url: "https://notion.so"}
       tags:
         - packages
-    - name: install vscode
-      include_tasks: vscode.yml 
-      tags:
-        - packages
-    - name: install opera
-      include_tasks: opera.yml 
-      tags:
-        - packages
+
     - name: Set git email addy
       command: git config --global user.email "{{ git_email }}"
       tags:
         - config
+
     - name: Install tools
       import_tasks: cli_tools.yml
       tags:
@@ -157,5 +171,3 @@
 #        - config
     - name: Set nautilus to show path/address
       command: gsettings set org.gnome.nautilus.preferences always-use-location-entry true
-    # - name: install nvidia drivers    ## Doesn't seem to work yet
-    #   import_tasks: nvidia.yml
