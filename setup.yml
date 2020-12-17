@@ -149,12 +149,12 @@
       tags:
         - packages
 
-    - name: use nativefier to create apps
-      include_tasks: nativefier.yml
-      with_items: 
-        - { name: notion, url: "https://notion.so"}
-      tags:
-        - packages
+#    - name: use nativefier to create apps
+#      include_tasks: nativefier.yml
+#      with_items: 
+#        - { name: notion, url: "https://notion.so"}
+#      tags:
+#        - packages
 
     - name: Set git email addy
       command: git config --global user.email "{{ git_email }}"

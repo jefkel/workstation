@@ -1,6 +1,18 @@
 ---
 ### Note: Much of this might be simplified with the github api to determine the release download url
 #########################################################
+# GitHub CLI
+- name: Get GH cli version
+  shell: curl https://github.com/cli/cli/releases/latest | grep -Po 'tag/v\K[^"]+'
+  changed_when: false
+  register: ghcli_version
+
+- name: Install remote GH cli package
+  dnf:
+    name: "https://github.com/cli/cli/releases/download/v{{ ghcli_version }}/gh_{{ ghcli_version }}_linux_amd64.rpm"
+    state: present
+
+#########################################################
 # Terraform
 - name: Get terraform version
   shell: curl https://github.com/hashicorp/terraform/releases/latest   | grep -Po 'tag/v\K[^"]+' 
