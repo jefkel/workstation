@@ -160,6 +160,11 @@
       tags:
         - config
 
+    - name: Set git pull default
+      command: git config --global pull.rebase false
+      tags:
+        - config
+
     - name: Install tools
       import_tasks: cli_tools.yml
       tags:
