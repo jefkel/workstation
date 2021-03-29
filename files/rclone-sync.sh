@@ -10,9 +10,11 @@ DROPBOX_BACKUP=~/sync/.drop-back
 EXCLUDE_FILE=~/.config/rclone/rclone.exclude
 
 # Sync new dropbox, backup changed local files first.
+echo "<<<<< Getting updates from cloud"
 rclone copy -u -v ${DROPBOX_PATH} ${DROPBOX} \
     --backup-dir ${DROPBOX_BACKUP} \
     --suffix .$(date +"%Y-%m-%d-%H-%M-%S")
 
 # sync dropbox with local changes excluding any garbage files
+echo ">>>>> Pushing updates to cloud"
 rclone sync -v ${DROPBOX} ${DROPBOX_PATH} --exclude-from ${EXCLUDE_FILE}
