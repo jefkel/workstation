@@ -1,0 +1,188 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    vars.yml
+
+  tasks: 
+    - name: Set distribution variables
+      include_vars: "{{ item }}"
+      with_first_found:
+        - files:
+          - group_vars/basePkgs-{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml
+          - group_vars/basePkgs-{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml
+          - group_vars/basePkgs-{{ ansible_distribution }}.yml
+          - group_vars/basePkgs-{{ ansible_os_family }}.yml
+
+    - name: BaseSetup
+      include_tasks: "{{ item }}"
+      with_first_found:
+        - files:
+          - "base-{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml"
+          - "base-{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml"
+          - "base-{{ ansible_distribution }}.yml"
+          - "base-{{ ansible_os_family }}.yml"
+
+    - name: Install tools
+      import_tasks: cli_tools.yml
+      tags:
+        - cli_tools
+
+    - meta: end_play
+
+    - name: install base packages
+      dnf:
+        name:
+        - azure-cli
+        - buildah 
+        - code
+        - "@development-tools"
+        - dkms 
+#        - docker
+#        - docker-compose
+        - elfutils-libelf-devel 
+        - flatpak
+        - gnome-shell-extension-dash-to-dock
+        - gnome-tweak-tool
+        - google-cloud-sdk
+        - guake
+        - hub
+        - helm
+        - ImageMagick
+        - jq
+        - keepassxc
+        - kernel-devel 
+        - kernel-headers
+        - krita
+        - kubectl
+        - NetworkManager-strongswan-gnome 
+        - python3-libselinux
+        - libnsl
+        - mpv
+        - npm
+        - openshot
+        - opera-stable
+        - podman
+        - powertop
+        - protobuf
+        - python3-devel
+        - python3-ansible-runner
+        - qt5-qtx11extras
+        - rclone
+        - remmina
+        - simple-scan
+        - simplescreenrecorder
+        - skopeo
+        - snapd
+        - strongswan
+        - vinagre
+        - vivaldi
+        - vlc
+        state: present 
+        update_cache: yes
+      become: yes
+      ignore_errors: yes
+      tags:
+        - packages
+#    - name: create docker group
+#      group: 
+#        name: docker
+#        state: present
+#      become: yes
+#      tags:
+#        - packages
+#    - name: add user to docker group
+#      user: 
+#        name: "{{ username }}"
+#        group: docker
+#        state: present
+#      become: yes
+#      tags:
+#        - packages
+
+    - name: add flatpak repo
+      command: "flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo"
+      become: yes
+
+    - name: install flatpak apps
+      command: "flatpak install {{ item.repo }} {{ item.name }} --noninteractive"
+      become: yes
+      with_items:
+        - { name: "com.slack.Slack", repo: "flathub"}
+        - { name: "com.obsproject.Studio", repo: "flathub"}
+        - { name: "us.zoom.Zoom", repo: "flathub"}
+        - { name: "com.spotify.Client", repo: "flathub"}
+        - { name: "com.getpostman.Postman", repo: "flathub"}
+#        - { name: "chat.rocket.RocketChat", repo: "flathub"}
+
+    - name: create snap symlink for classic support
+      file: 
+        src: /var/lib/snapd/snap
+        dest: /snap
+        state: link
+      become: yes
+      tags:
+        - packages
+
+    - name: snap install expected to fail
+      command: "snap install {{ item }}"
+      become: yes
+      with_items:
+        - snap-store
+      ignore_errors: yes
+      tags:
+        - packages
+
+    - name: install snaps # snap module doesn't come in until 2.8
+      command: "snap install {{ item }}"
+      become: yes
+      with_items: 
+#        - ramboxpro
+        - "helm --classic"
+      tags:
+        - packages
+
+    - name: snap remove store
+      command: "snap remove {{ item }}"
+      become: yes
+      with_items:
+        - snap-store
+      ignore_errors: yes
+      tags:
+        - packages
+
+    - name: install npm items
+      npm: 
+        name: "{{ item }}"
+        state: present
+        global: yes
+      #  path: ~/npm
+      with_items: 
+        - nativefier 
+      become: yes
+      tags:
+        - packages
+
+#    - name: use nativefier to create apps
+#      include_tasks: nativefier.yml
+#      with_items: 
+#        - { name: notion, url: "https://notion.so"}
+#      tags:
+#        - packages
+
+    - name: Set git email addy
+      command: git config --global user.email "{{ git_email }}"
+      tags:
+        - config
+
+    - name: Set git pull default
+      command: git config --global pull.rebase false
+      tags:
+        - config
+
+#    - name: Add startup scripts
+#      import_tasks: startup_scripts.yml
+#      tags:
+#        - config
+    - name: Set nautilus to show path/address
+      command: gsettings set org.gnome.nautilus.preferences always-use-location-entry true

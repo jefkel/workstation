@@ -1,4 +1,15 @@
 ---
+- name: Add packaged tools ({{ ansible_distribution }})
+  apt:
+    pkg: 
+      - azure-cli
+      - helm
+      - skopeo
+      - podman
+      - buildah
+  become: yes
+
+
 ### Note: Much of this might be simplified with the github api to determine the release download url
 #########################################################
 # GitHub CLI
@@ -126,18 +137,18 @@
 - name: Download kustomize binary
   get_url:
     url: "https://github.com{{ kustomize_download_url.stdout }}"
-    dest: "/tmp/kustomize.zip"
+    dest: "/tmp/kustomize.tar.gz"
     mode: 0755
 
-- name: unzip kustomize binary
-  unarchive: 
-    src: "/tmp/kustomize.zip"
-    remote_src: yes
-    dest: /usr/local/bin/
-    owner: root
-    group: bin
-    mode: 0755
-  become: yes
+  #- name: unzip kustomize binary
+  #unarchive: 
+  #  src: "/tmp/kustomize.tar.gz"
+  #  remote_src: yes
+  #  dest: /usr/local/bin/
+  #  owner: root
+  #  group: bin
+  #  mode: 0755
+  #become: yes
 
 #########################################################
 # jfrog cli

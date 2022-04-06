@@ -1,0 +1,60 @@
+---
+- name: Update existing packages
+  apt:
+    name: "*"
+    state: latest
+  become: yes
+
+- name: Add base packages ({{ ansible_distribution }})
+  apt:
+    pkg: "{{ basePkgs }}"
+  become: yes
+
+- name: Add Microsoft package key
+  ansible.builtin.apt_key:
+    url: "{{ microsoft_package_key_url }}"
+    state: present
+  become: yes
+
+- name: Add Helm package key
+  ansible.builtin.apt_key:
+    url: "{{ helm_package_key_url }}"
+    state: present
+  become: yes
+
+- name: Add Podman package key ({{ ansible_distribution }})
+  ansible.builtin.apt_key:
+    url: https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key
+    state: present
+  become: yes
+
+- name: Create Podman repository ({{ ansible_distribution }})
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /"
+    filename: libcontainers
+    state: present
+  become: yes
+
+- name: Create Azure CLI repository ({{ ansible_distribution }})
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ {{ ansible_distribution_release }} main"
+    filename: azure-cli
+    state: present
+  become: yes
+
+- name: Create Helm CLI repository ({{ ansible_distribution }})
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://baltocdn.com/helm/stable/debian/ all main"
+    filename: helm-stable
+    state: present
+  become: yes
+
+- name: Get kustomize download URL
+  shell: curl https://api.github.com/repos/kubernetes-sigs/kustomize/releases | grep browser_download.*kustomize_v.*_linux_amd64 | cut -d '"' -f 4 | sort -V | tail -1
+  changed_when: false
+  register: kustomize_download_url
+
+
+- name: Show kustomize download URL
+  debug:
+    msg: "kustomize URL = {{ kustomize_download_url.stdout }}"

@@ -1,0 +1,11 @@
+basePkgs:
+  - ca-certificates
+  - curl
+  - apt-transport-https
+  - lsb-release
+  - gnupg
+  - gnupg2
+  - jq
+  - tree
+  - unzip
+  - wget
