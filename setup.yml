@@ -4,26 +4,26 @@
   vars_files:
     vars.yml
   tasks: 
-    - name: set hostname
-      hostname:
-        name: "{{ hostname }}"
+#    - name: set hostname
+#      hostname:
+#        name: "{{ hostname }}"
 
     - name: add necesssary repos
       import_tasks: repos.yml
-    - name: replace dnf.conf
-      file:
-        src: dnf.conf
-        dest: /etc/dnf/dnf.conf
-        owner: root
-        group: root
-        mode: 0644
+#    - name: replace dnf.conf
+#      file:
+#        src: dnf.conf
+#        dest: /etc/dnf/dnf.conf
+#        owner: root
+#        group: root
+#        mode: 0644
     - name: install base packages
       dnf:
         name:
         - buildah 
         - code
-        - "@development-tools"
-        - dkms 
+#        - "@development-tools"
+#        - dkms 
 #        - docker
 #        - docker-compose
         - elfutils-libelf-devel 
@@ -31,38 +31,38 @@
         - gnome-shell-extension-dash-to-dock
         - gnome-tweak-tool
         - google-cloud-sdk
-        - guake
-        - hub
-        - ImageMagick
+#        - guake
+#        - hub
+#        - ImageMagick
         - jq
-        - keepassxc
+#        - keepassxc
         - kernel-devel 
         - kernel-headers
-        - krita
+#        - krita
         - kubectl
-        - NetworkManager-strongswan-gnome 
+#        - NetworkManager-strongswan-gnome 
         - python3-libselinux
         - libnsl
-        - mpv
+#        - mpv
         - npm
-        - openshot
-        - opera-stable
+#        - openshot
+#        - opera-stable
         - podman
         - powertop
         - protobuf
         - python3-devel
-        - python3-ansible-runner
+#        - python3-ansible-runner
         - qt5-qtx11extras
-        - rclone
-        - remmina
-        - simple-scan
-        - simplescreenrecorder
+#        - rclone
+#        - remmina
+#        - simple-scan
+#        - simplescreenrecorder
         - skopeo
-        - snapd
-        - strongswan
-        - vinagre
-        - vivaldi
-        - vlc
+#        - snapd
+#        - strongswan
+#        - vinagre
+#        - vivaldi
+#        - vlc
         state: present 
         update_cache: yes
       become: yes
@@ -118,40 +118,12 @@
       tags:
         - packages
 
-    - name: install snaps # snap module doesn't come in until 2.8
-      command: "snap install {{ item }}"
-      become: yes
-      with_items: 
-#        - ramboxpro
-        - "helm --classic"
-      tags:
-        - packages
-
-    - name: snap remove store
-      command: "snap remove {{ item }}"
-      become: yes
-      with_items:
-        - snap-store
-      ignore_errors: yes
-      tags:
-        - packages
-
-    - name: install npm items
-      npm: 
-        name: "{{ item }}"
-        state: present
-        global: yes
-      #  path: ~/npm
-      with_items: 
-        - nativefier 
-      become: yes
-      tags:
-        - packages
-
-#    - name: use nativefier to create apps
-#      include_tasks: nativefier.yml
-#      with_items: 
-#        - { name: notion, url: "https://notion.so"}
+#    - name: snap remove store
+#      command: "snap remove {{ item }}"
+#      become: yes
+#      with_items:
+#        - snap-store
+#      ignore_errors: yes
 #      tags:
 #        - packages
 

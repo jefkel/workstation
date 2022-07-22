@@ -1,30 +1,8 @@
 ---
-- name: import repo GPG keys
-# Added rpmkeys re: https://access.redhat.com/solutions/3720351
-  shell: "rpm --import {{ item }} && rpmkeys --import {{ item }}"
-  args:
-    warn: false
-  become: yes
-  with_items:
-    - https://packages.cloud.google.com/yum/doc/yum-key.gpg
-    - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-    - https://packages.microsoft.com/keys/microsoft.asc
-    - https://rpm.opera.com/rpmrepo.key
-    - https://repo.vivaldi.com/archive/linux_signing_key.pub
-
-- name: add repos via url
-  command: "dnf config-manager --add-repo {{ item }}"
-  args:
-    warn: false
-  become: yes
-  with_items: 
-    - https://repo.vivaldi.com/archive/vivaldi-fedora.repo
-
-- name: add repos via file
-  copy: 
-    src: "files/{{ item }}"
+- name: add repos via template
+  ansible.builtin.template: 
+    src: "templates/{{ item }}.j2"
     dest: "/etc/yum.repos.d/{{ item }}"
-    mode: 0644
   become: true
   with_items: 
     - google-cloud-sdk.repo
@@ -32,19 +10,24 @@
     - microsoft.repo
     - opera.repo
   
-- name: add repos via remoteRPM
-# Added -y to avoid additional troubleshooting of rpmkeys --import issues
-  command: "dnf install {{ item }} -y"
-  args:
-    warn: false
-  become: yes
-  with_items:
-  - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-33.noarch.rpm
-  - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-33.noarch.rpm
+#- name: import repo GPG keys
+## Added rpmkeys re: https://access.redhat.com/solutions/3720351
+#  shell: "rpm --import {{ item }} && rpmkeys --import {{ item }}"
+#  args:
+#    warn: false
+#  become: yes
+#  with_items:
+#    - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+#    - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+#    - https://packages.microsoft.com/keys/microsoft.asc
+#    - https://rpm.opera.com/rpmrepo.key
 
-- name: add flat-remix-theme repo
-  command: dnf copr enable daniruiz/flat-remix -y 
-  args:
-    warn: false
-  become: yes
-  ignore_errors: yes
+#- name: add repos via remoteRPM
+## Added -y to avoid additional troubleshooting of rpmkeys --import issues
+#  command: "dnf install {{ item }} -y"
+#  args:
+#    warn: false
+#  become: yes
+#  with_items:
+#  - https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-33.noarch.rpm
+#  - https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-33.noarch.rpm
